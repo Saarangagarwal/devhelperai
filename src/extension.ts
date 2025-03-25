@@ -8,11 +8,24 @@ export function activate(context: vscode.ExtensionContext) {
 
 	console.log('Congratulations, your extension "devhelperai" is now active!');
 
-	const disposable = vscode.commands.registerCommand('devhelperai.helloWorld', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('devhelperai.helloWorld', () => {
 		vscode.window.showInformationMessage('Hello World from DevHelperAI!');
-	});
+	}));
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(vscode.commands.registerCommand('devhelperai.feedbackQuestion', () => {
+		vscode.window.showInformationMessage('How are you liking the DevHelperAI extension?', "It's great!", "It's okay", "Not good").then((response) => {
+			if (response === "It's great!") {
+				vscode.window.showInformationMessage('That is great to hear!');
+			}
+			else if (response === "It's okay") {
+				vscode.window.showInformationMessage('We will try to improve!');
+			}
+			else if (response === "Not good") {
+				vscode.window.showInformationMessage('We are sorry to hear that!');
+			}
+		});
+	}));
+
 }
 
 // This method is called when your extension is deactivated

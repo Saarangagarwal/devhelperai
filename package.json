@@ -17,7 +17,13 @@
     "commands": [
       {
         "command": "devhelperai.helloWorld",
+        "category": "DevHelperAI",
         "title": "Hello World"
+      },
+      {
+        "command": "devhelperai.feedbackQuestion",
+        "category": "DevHelperAI",
+        "title": "Feedback"
       }
     ]
   },
