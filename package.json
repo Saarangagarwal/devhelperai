@@ -14,6 +14,26 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "devhelperai-sidebar-view",
+          "title": "DevHelperAI",
+          "icon": "media/assets/chat_sidebar.svg"
+        }
+      ]
+    },
+    "views": {
+      "devhelperai-sidebar-view": [
+        {
+          "type": "webview",
+          "id": "devhelperai-sidebar",
+          "name": "DevHelperAI",
+          "icon": "media/assets/chat_sidebar.svg",
+          "contextualTitle": "DevHelperAI"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "devhelperai.helloWorld",
