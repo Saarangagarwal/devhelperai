@@ -44,6 +44,11 @@
         "command": "devhelperai.feedbackQuestion",
         "category": "DevHelperAI",
         "title": "Feedback"
+      },
+      {
+        "command": "devhelperai.testing123",
+        "category": "DevHelperAI",
+        "title": "Testing123 from selection"
       }
     ]
   },

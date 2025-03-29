@@ -17,8 +17,31 @@ export function activate(context: vscode.ExtensionContext) {
 		)
 	);
 
+	const bar_item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
+	bar_item.text = "$(beaker) DevHelperAI";
+	bar_item.tooltip = "DevHelperAI";
+	bar_item.command = "devhelperai.testing123";
+	bar_item.show();
+
+
+
 	context.subscriptions.push(vscode.commands.registerCommand('devhelperai.helloWorld', () => {
 		vscode.window.showInformationMessage('Hello World from DevHelperAI!');
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('devhelperai.testing123', () => {
+		console.log('Testing123 command executed');
+		const {activeTextEditor} = vscode.window;
+		
+		if (!activeTextEditor) {
+			vscode.window.showInformationMessage('No active editor found');
+			return;
+		}
+		const text = activeTextEditor.document.getText(activeTextEditor.selection);
+		sidebarProvider._view?.webview.postMessage({
+			type: 'new-todo',
+			value: text
+		});
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('devhelperai.feedbackQuestion', () => {
