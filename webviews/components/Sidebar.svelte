@@ -14,12 +14,13 @@
   let chatContainer: HTMLDivElement;
 
   let models: Record<number, string> = {
-    1: "GPT-3.5",
-    2: "Claude",
-    3: "DeepSeek",
-    4: "GPT-4",
+    1: "gemma3",
+    2: "llama3-chatqa:8b",
+    3: "qwen2.5:1.5b",
+    4: "deepseek-coder:1.3b-instruct",
+    // 5: "llama3.2:3b", // This is the default model
   };
-  let selectedModel: string = "";
+  let selectedModel: string = "llama3.2:3b";
 
   let chatLog: Array<{
     index: number;
@@ -39,6 +40,32 @@
   let minHeight = `${1 + minRows * 1.1}em`;
   let maxHeight = maxRows ? `${1 + maxRows * 1.1}em` : "auto";
 
+  onMount(() => {
+    window.addEventListener("message", (event) => {
+      const message = event.data; // The JSON data that the extension sends
+      switch (message.type) {
+        case "agentResponse":
+          messages = [...messages, { sender: "Agent", text: message.value }];
+          chatLog = [
+            ...chatLog,
+            {
+              index: 0,
+              session: 0,
+              messages: [
+                {
+                  type: "Agent",
+                  model: selectedModel,
+                  content: message.value,
+                  code: "",
+                },
+              ],
+            },
+          ];
+          break;
+      }
+    });
+  });
+
   function resizeTextarea() {
     if (textarea) {
       // Set the height based on the content of the textarea
@@ -49,6 +76,13 @@
       const scrollHeight = textarea.scrollHeight;
       textarea.style.maxHeight = maxHeight;
       textarea.style.minHeight = minHeight;
+    }
+  }
+
+  function handleKeyDown(event: any) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault(); // Prevent the default action of the Enter key
+      sendMessage(); // Call the sendMessage function
     }
   }
 
@@ -74,31 +108,38 @@
       },
     ];
 
+    console.log("Chat log in svlte:", chatLog);
+
+    tsvscode.postMessage({
+      type: "onChatSubmit",
+      value: chatLog,
+    });
+
     // Clear the input
     userInput = "";
 
     // Simulate an agent response after a short delay
-    setTimeout(() => {
-      messages = [
-        ...messages,
-        { sender: "Agent", text: "This is a response!" },
-      ];
-      chatLog = [
-        ...chatLog,
-        {
-          index: 0,
-          session: 0,
-          messages: [
-            {
-              type: "Agent",
-              model: selectedModel,
-              content: "this is a result hehe",
-              code: "",
-            },
-          ],
-        },
-      ];
-    }, 1000);
+    // setTimeout(() => {
+    //   messages = [
+    //     ...messages,
+    //     { sender: "Agent", text: "This is a response!" },
+    //   ];
+    //   chatLog = [
+    //     ...chatLog,
+    //     {
+    //       index: 0,
+    //       session: 0,
+    //       messages: [
+    //         {
+    //           type: "Agent",
+    //           model: selectedModel,
+    //           content: "this is a result hehe",
+    //           code: "",
+    //         },
+    //       ],
+    //     },
+    //   ];
+    // }, 1000);
   }
 </script>
 
@@ -137,6 +178,7 @@
       bind:value={userInput}
       placeholder="Ask Agent"
       on:input={resizeTextarea}
+      on:keydown={handleKeyDown}
       style="min-height: {minHeight}; max-height: {maxHeight}; overflow-y: auto; resize: none;"
     ></textarea>
   </div>
@@ -144,8 +186,9 @@
   <!-- Right Icons -->
   <div class="right-icons">
     <select class="dropdown" bind:value={selectedModel}>
+      <option value="llama3.2:3b" selected>llama3.2:3b</option>
       {#each Object.entries(models) as [key, value]}
-        <option value={key}>{value}</option>
+        <option {value}>{value}</option>
       {/each}
     </select>
     <button class="send-button" on:click={sendMessage}>
@@ -188,10 +231,11 @@
     border-radius: 8px;
     max-width: 100%;
     word-wrap: break-word;
+    color: black;
   }
 
   .User {
-    background-color: #d0f0c0;
+    background-color: #fdf5e9;
     width: 100%;
     margin-left: auto;
     text-align: right;
@@ -199,7 +243,7 @@
   }
 
   .agent {
-    background-color: #f0f0f0;
+    background-color: #e1ffdb;
     width: 100%;
     align-self: flex-start;
   }

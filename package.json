@@ -91,8 +91,12 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.38",
     "@langchain/core": "^0.3.43",
     "@langchain/langgraph": "^0.2.61",
+    "@langchain/ollama": "^0.2.0",
+    "@langchain/pinecone": "^0.2.0",
+    "faiss-node": "^0.5.1",
     "langchain": "^0.3.19"
   }
 }
