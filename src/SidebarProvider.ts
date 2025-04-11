@@ -109,6 +109,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     .addEdge("generate", "__end__")
     .compile();
     
+    if (value[value.length - 1].messages[0].code) {
+      let res = await llm.invoke(
+        [
+          ["human", value[value.length - 1].messages[0].content + "\n" + value[value.length - 1].messages[0].code],
+        ]);
+      return res.content;
+    }
+
     let inputs = { question: value[value.length - 1].messages[0].content};
     console.log("Inputs:", inputs);
     console.log('Selected model is ', value[value.length - 1].messages[0].model);

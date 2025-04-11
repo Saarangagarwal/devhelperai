@@ -5,6 +5,7 @@
   let userInput = "";
   let userModel = "user"; // Just a placeholder for the user model
   let selectedInput = "";
+  let getWindowSelectionText = "";
 
   let showFileSelector = false;
   let selectedFilesFromSelector: string[] = [];
@@ -44,7 +45,7 @@
     window.addEventListener("message", (event) => {
       const message = event.data; // The JSON data that the extension sends
       switch (message.type) {
-        case "agentResponse":
+        case "agentResponse": {
           messages = [...messages, { sender: "Agent", text: message.value }];
           chatLog = [
             ...chatLog,
@@ -62,6 +63,11 @@
             },
           ];
           break;
+        }
+        case "getWindowSelectionTextResponse": {
+          getWindowSelectionText = message.value;
+          break;
+        }
       }
     });
   });
@@ -102,7 +108,7 @@
             type: "User",
             model: selectedModel,
             content: userInput,
-            code: "",
+            code: getWindowSelectionText,
           },
         ],
       },

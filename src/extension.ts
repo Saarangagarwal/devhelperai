@@ -72,11 +72,28 @@ export async function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 		const text = activeTextEditor.document.getText(activeTextEditor.selection);
+		console.log('Selected text:', text);
 		sidebarProvider._view?.webview.postMessage({
 			type: 'new-todo',
 			value: text
 		});
 	}));
+
+	vscode.window.onDidChangeTextEditorSelection((e) => {
+		// Check if there's an active editor
+		const activeTextEditor = vscode.window.activeTextEditor;
+		if (activeTextEditor) {
+			// Get the updated selected text
+			const text = activeTextEditor.document.getText(activeTextEditor.selection);
+			console.log('Updated Selected text:', text);
+
+			// Send the updated selection to the webview
+			sidebarProvider._view?.webview.postMessage({
+				type: 'getWindowSelectionTextResponse',
+				value: text
+			});
+		}
+	});
 
 	context.subscriptions.push(vscode.commands.registerCommand('devhelperai.feedbackQuestion', () => {
 		vscode.window.showInformationMessage('How are you liking the DevHelperAI extension?', "It's great!", "It's okay", "Not good").then((response) => {
