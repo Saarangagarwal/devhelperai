@@ -14,6 +14,7 @@ import { pull } from 'langchain/hub';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { Annotation, StateGraph } from '@langchain/langgraph';
 import { ChatOllama } from "@langchain/ollama";
+import { VectorStore } from '@langchain/core/vectorstores';
 
 export let vectorStore: MemoryVectorStore;
 export let promptTemplate: ChatPromptTemplate;
@@ -30,8 +31,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	// console.log('Keys set for sync:', context.globalState.keys());
 	// console.log('Global state:', context.globalState.get('faiss_index_file.index'));
 	// console.log('Before created:', vscode.workspace.fs.readDirectory(context.extensionUri));
+	console.log('Creating directory:', context.extensionUri);
 	vscode.workspace.fs.createDirectory(context.extensionUri);
-	// console.log('Directory created:', vscode.workspace.fs.readDirectory(context.extensionUri));
+	console.log('Directory created:', vscode.workspace.fs.readDirectory(context.extensionUri));
 
 
 	console.log(__dirname);
@@ -40,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		model: "mxbai-embed-large",
 		baseUrl: "http://localhost:11434",
 	});
-	vectorStore = await getOrCreatePineconeClient(faissIndexPath, embeddings, context);
+	vectorStore = await getOrCreateMemoryVectorStore(faissIndexPath, embeddings, context);
 	console.log('Vector store created:', vectorStore);
 
 	const sidebarProvider = new SidebarProvider(context.extensionUri);
@@ -110,18 +112,48 @@ export async function activate(context: vscode.ExtensionContext) {
 	}));
 
 	let rootDir = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-	if (rootDir) {
+	if (false){//context.globalState.keys().includes('vector_store') && context.globalState.get('vector_store')) {
+		const localVectorStore = String(context.globalState.get('vector_store'));
+		const vectors = JSON.parse(localVectorStore);
+		const ebdings = vectors.map((vector: { embedding: any; }) => vector.embedding);
+		const documents = vectors.map((vector: { content: any; id: any; }) => ({
+			pageContent: vector.content,
+			metadata: { id: vector.id }
+		}));
+		const memoryVectorStore: VectorStore = new MemoryVectorStore(embeddings);
+		memoryVectorStore.addVectors(ebdings, documents);
+	} else if (rootDir) {
 		const codebaseDocs = await readCodebaseFiles(rootDir);
 		const splitter = new RecursiveCharacterTextSplitter({
 			chunkSize: 500,
 			chunkOverlap: 100,
-		  });
+		});
 		const allSplits = await splitter.splitDocuments(codebaseDocs);
 		console.log('Splits:', allSplits.length);
 		console.log('Splits:', allSplits[0].metadata);
 		await vectorStore.addDocuments(allSplits);
 		console.log('Documents added to vector store:', allSplits.length);
+		const localVectorStore = JSON.stringify(vectorStore.memoryVectors);
+		context.globalState.setKeysForSync(['vector_store']);
+		context.globalState.update('vector_store', localVectorStore);
 	}
+
+	
+
+
+
+	// const vectors = JSON.parse(localVectorStore);
+	// console.log('Vectors:', typeof(vectors));
+	// console.log('Vectors type:', vectors);
+
+    // vectors.forEach(x => memoryVectorStore.addVectors(vectors.map(x => x.embedding), vectors.map(x => {
+    //   return {
+    //     pageContent: x.content,
+    //     metadata: { id: x.id }
+    //   };
+    // })));
+	
+
 
 	promptTemplate = await pull<ChatPromptTemplate>("rlm/rag-prompt");
 	
@@ -169,7 +201,7 @@ async function readCodebaseFiles(directory: string): Promise<Document[]> {
     return filesDocs;
 }
 
-async function getOrCreatePineconeClient(faissIndexPath: string, embeddings: OllamaEmbeddings, context: vscode.ExtensionContext): Promise<MemoryVectorStore> {
+async function getOrCreateMemoryVectorStore(path: string, embeddings: OllamaEmbeddings, context: vscode.ExtensionContext): Promise<MemoryVectorStore> {
     const vectorStore = new MemoryVectorStore(embeddings);
 	return vectorStore;
 }
