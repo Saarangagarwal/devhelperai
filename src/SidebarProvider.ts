@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import { promptTemplate, vectorStore } from "./extension";
+import { promptTemplate, vectorStore, config } from "./extension";
 import { ChatOllama } from "@langchain/ollama";
 import { Annotation, StateGraph } from "@langchain/langgraph";
 import { Document } from "langchain/document";
@@ -22,6 +22,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     };
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+    this._view?.webview.postMessage({
+      type: "getUserDefinedLLMModels",
+      value: config.get<Array<string>>("ollama_models"),
+    });
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
@@ -56,12 +61,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
   public async getAgentResponse(value: any) {
     console.log("getAgentResponse", value);
-    // return "this is an amazing agent response" + value[value.length - 1].messages[0].content;
 
     const llm = new ChatOllama({
       model: value[value.length - 1].messages[0].model,
-      temperature: 0.7,
-      maxRetries: 2,
+      temperature: config.get<number>("temperature") ?? 0.7,
+      maxRetries: config.get<number>("maxRetries") ?? 2,
     });
     
     
@@ -129,7 +133,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     
     console.log(`\nRetrieval Score: ${retrieval_score}`);
 
-    if (retrieval_score > 0.65) {
+    if (retrieval_score > (config.get<number>("retrieval_score") ?? 0.65)) {
       return result["answer"];
     } else {
       let res = await llm.invoke(

@@ -18,6 +18,7 @@ import { VectorStore } from '@langchain/core/vectorstores';
 
 export let vectorStore: MemoryVectorStore;
 export let promptTemplate: ChatPromptTemplate;
+export const config = vscode.workspace.getConfiguration('devhelperai');
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed

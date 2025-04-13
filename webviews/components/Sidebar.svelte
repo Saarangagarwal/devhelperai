@@ -68,6 +68,23 @@
           getWindowSelectionText = message.value;
           break;
         }
+        case "getUserDefinedLLMModels": {
+          console.log("getUserDefinedLLMModels", message.value);
+          let mdls: Array<string> = message.value;
+          if (!mdls) {
+            mdls = [
+              "gemma3",
+              "llama3-chatqa:8b",
+              "qwen2.5:1.5b",
+              "deepseek-coder:1.3b-instruct",
+            ];
+          }
+          models = {};
+          mdls.forEach((mdl, index) => {
+            models[index + 1] = mdl;
+          });
+          break;
+        }
       }
     });
   });

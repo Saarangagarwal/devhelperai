@@ -50,7 +50,37 @@
         "category": "DevHelperAI",
         "title": "Testing123 from selection"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "DevHelperAI Settings",
+      "properties": {
+        "devhelperai.retrieval_threshold": {
+          "type": "number",
+          "default": 0.65,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Set Retrieval Threshold; lower is more permissive, higher is more strict; sets the threshold to decide between RAG inference workflow and normal LLM inference."
+        },
+        "devhelperai.ollama_temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Set ollama inference temperature value; lower is more deterministic, higher is more random."
+        },
+        "devhelperai.ollama_max_retries": {
+          "type": "number",
+          "default": 2,
+          "minimum": 0,
+          "description": "Set ollama api max retries value."
+        },
+        "devhelperai.ollama_models": {
+          "type": "array",
+          "default": ["gemma3", "llama3-chatqa:8b", "qwen2.5:1.5b", "deepseek-coder:1.3b-instruct"],
+          "description": "Set the model id's in an array as they appear on ollama"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
