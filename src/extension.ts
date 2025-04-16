@@ -15,6 +15,7 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { Annotation, StateGraph } from '@langchain/langgraph';
 import { ChatOllama } from "@langchain/ollama";
 import { VectorStore } from '@langchain/core/vectorstores';
+import * as ts from 'typescript';
 
 export let vectorStore: MemoryVectorStore;
 export let promptTemplate: ChatPromptTemplate;
@@ -25,6 +26,9 @@ export const config = vscode.workspace.getConfiguration('devhelperai');
 export async function activate(context: vscode.ExtensionContext) {
 
 	console.log('Congratulations, your extension "devhelperai" is now active!');
+
+	// let kk = getFunctionCallGraph('C:/Users/s55agarw/Desktop/UWaterloo/MMath CS/Winter 2025/CS 848/devhelperai/src/ollamaProcessor.ts', 'd');
+	// console.log('Function call graph:', kk);
 
 	// console.log('Extension context:', context.globalState.keys());
 	// context.globalState.setKeysForSync(['faiss_index_file.index']);
@@ -205,6 +209,70 @@ async function readCodebaseFiles(directory: string): Promise<Document[]> {
 async function getOrCreateMemoryVectorStore(path: string, embeddings: OllamaEmbeddings, context: vscode.ExtensionContext): Promise<MemoryVectorStore> {
     const vectorStore = new MemoryVectorStore(embeddings);
 	return vectorStore;
+}
+
+export function getFunctionCallGraph(filePath: string, targetFunction: string): string[] {
+	try {
+		const fileContent = fs.readFileSync(filePath, 'utf-8');
+		const sourceFile = ts.createSourceFile(
+			path.basename(filePath),
+			fileContent,
+			ts.ScriptTarget.Latest,
+			true
+		);
+
+		let callList: string[] = [];
+
+		function findTargetFunction(node: ts.Node): ts.Node | undefined {
+			if (
+				ts.isFunctionDeclaration(node) &&
+				node.name?.text === targetFunction
+			) {
+				return node;
+			}
+
+			// Handle arrow functions or function expressions assigned to const
+			if (
+				ts.isVariableStatement(node)
+			) {
+				for (const decl of node.declarationList.declarations) {
+					if (
+						ts.isIdentifier(decl.name) &&
+						decl.name.text === targetFunction &&
+						decl.initializer &&
+						(ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))
+					) {
+						return decl.initializer;
+					}
+				}
+			}
+
+			return ts.forEachChild(node, findTargetFunction);
+		}
+
+		function collectCalls(node: ts.Node) {
+			if (ts.isCallExpression(node)) {
+				const called = node.expression.getText();
+				callList.push(called);
+			}
+			ts.forEachChild(node, collectCalls);
+		}
+
+		const targetNode = findTargetFunction(sourceFile);
+		if (targetNode) {
+			collectCalls(targetNode);
+		} else {
+			console.warn(`Function '${targetFunction}' not found in ${filePath}`);
+		}
+
+		return callList;
+	} catch (error) {
+		return [ 
+			'There is an error in the provided information. Please check for the existence of the provided file path and the function name in that file.',
+        ];
+		// return [`Error: ${error}`];
+	}
+    
 }
 
 // This method is called when your extension is deactivated

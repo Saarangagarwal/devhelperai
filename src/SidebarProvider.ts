@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
-import { promptTemplate, vectorStore, config } from "./extension";
+import { promptTemplate, vectorStore, config, getFunctionCallGraph } from "./extension";
 import { ChatOllama } from "@langchain/ollama";
 import { Annotation, StateGraph } from "@langchain/langgraph";
 import { Document } from "langchain/document";
@@ -125,6 +125,19 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     console.log("Inputs:", inputs);
     console.log('Selected model is ', value[value.length - 1].messages[0].model);
     
+    const pattern = /^Which functions does (.+) call from the file path (.*)$/;
+    let match = value[value.length - 1].messages[0].content.match(pattern);
+    if (match) {
+      const calls = getFunctionCallGraph(match[2], match[1]);
+      if (calls[0] === 'There is an error in the provided information. Please check for the existence of the provided file path and the function name in that file.') {
+        return calls[0];
+      }
+      if (calls.length === 0) {
+        return "Your function does not call any functions";
+      }
+      return "Your function calls the following functions " + (calls.length > 0 ? calls.join(', ') : 'None');
+    }
+
     let result = await graph.invoke(inputs);
     
     console.log(result.context.slice(0, 2));

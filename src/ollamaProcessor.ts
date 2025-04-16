@@ -8,3 +8,23 @@ const embeddings = new OllamaEmbeddings({
 });
 
 const vectorStore = new FaissStore(embeddings, {});
+
+function a() {
+    console.log("a");
+}
+
+function b() {
+    console.log("b");
+    a();
+}
+
+function c() {
+    console.log("c");
+    a();
+}
+
+function d() {
+    console.log("d");
+    b();
+    c();
+}
