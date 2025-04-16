@@ -52,6 +52,10 @@ This extension has not been tested on Apple Silicon. Please use with caution. Mo
 
 ## Release Notes
 
+### 0.0.4
+
+Update README
+
 ### 0.0.3
 
 Some bug fixes
