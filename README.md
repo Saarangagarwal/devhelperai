@@ -10,7 +10,12 @@ This documentation is in progress and will be updated soon! Thanks for your pati
 
 ## Features
 
-In progress...
+(1) Codebase Parsing and Storage
+(2) Question Answering
+(3) Function Dependency discovery
+(4) Context-aware code and test generation
+(5) Code review assistant
+(6) Full control over the LLM
 
 <!-- Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
@@ -22,7 +27,7 @@ For example if there is an image subfolder under your extension project workspac
 
 ## Requirements
 
-In progress...
+Please install Ollama by visiting https://ollama.com/download and following the installation instructions for your operating system. Running Ollama locally is required, as the extension relies on it to handle model downloads, deployment, and resource allocation for inference.
 
 <!-- If you have any requirements or dependencies, add a section describing those and how to install and configure them. -->
 
@@ -52,7 +57,7 @@ This extension has not been tested on Apple Silicon. Please use with caution. Mo
 
 ## Release Notes
 
-### 0.0.4
+### 0.0.5
 
 Update README
 
